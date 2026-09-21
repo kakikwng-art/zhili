@@ -1,0 +1,204 @@
+@import "tailwindcss";
+@source "./**/*.{ts,tsx}";
+@source "../native/**/*.{html,ts,tsx}";
+
+@theme {
+  --color-paper: #f3ece0;
+  --color-paper-deep: #e8dfd0;
+  --color-sheet: #faf6ee;
+  --color-board: #d9cbb6;
+  --color-ink: #2a241c;
+  --color-muted: #7a6e60;
+  --color-faint: #a39686;
+  --color-rule: #d4c8b4;
+  --color-vermilion: #c4452b;
+  --color-vermilion-fg: #faf6ee;
+  --color-sunday-wash: color-mix(in oklab, var(--color-vermilion) 7%, var(--color-paper));
+  --color-today-wash: color-mix(in oklab, var(--color-vermilion) 11%, var(--color-paper));
+
+  --font-sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --font-display: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+
+  --text-cell: 0.625rem;
+  --text-cell--line-height: 1.2;
+  --text-date: 0.625rem;
+  --text-date--line-height: 1;
+
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-3xl: 1.5rem;
+
+  --shadow-hairline:
+    0 0 0 1px color-mix(in oklab, var(--color-ink) 8%, transparent),
+    0 1px 2px color-mix(in oklab, var(--color-ink) 5%, transparent);
+  --shadow-page:
+    0 0 0 1px color-mix(in oklab, var(--color-ink) 8%, transparent),
+    0 12px 28px color-mix(in oklab, var(--color-ink) 14%, transparent);
+  --shadow-sheet:
+    0 -8px 28px color-mix(in oklab, var(--color-ink) 16%, transparent);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--color-board);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  .app-frame {
+    height: 100dvh;
+    background-image:
+      linear-gradient(180deg, color-mix(in oklab, var(--color-ink) 3%, transparent), transparent 28%),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        color-mix(in oklab, var(--color-ink) 1.4%, transparent) 3px,
+        color-mix(in oklab, var(--color-ink) 1.4%, transparent) 4px
+      );
+  }
+
+  .pt-header {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+  }
+
+  .pb-dock {
+    padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .h-drawer-day {
+    height: 72dvh;
+    max-height: 86dvh;
+  }
+
+  .h-drawer-full {
+    height: 92dvh;
+  }
+
+  .cal-date {
+    font-size: var(--text-date);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cal-event-line {
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-cell);
+    line-height: 1.2;
+  }
+
+  .cal-chip {
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: 0.2rem;
+    padding-inline: 0.2rem;
+    font-size: var(--text-cell);
+    line-height: 1.35;
+    background: var(--chip-bg, var(--color-paper-deep));
+    color: var(--chip-ink, var(--color-ink));
+  }
+
+  .cal-dot {
+    background: var(--chip-bg);
+  }
+
+  .color-sheet {
+    height: 16rem;
+  }
+
+  .time-wheel {
+    --wheel-item: 2.25rem;
+  }
+
+  .time-wheel-scroller {
+    height: calc(var(--wheel-item) * 3);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    mask-image: linear-gradient(to bottom, transparent, #000 28%, #000 72%, transparent);
+  }
+
+  .time-wheel-scroller::-webkit-scrollbar {
+    display: none;
+  }
+
+  .time-wheel-item,
+  .time-wheel-spacer {
+    height: var(--wheel-item);
+    scroll-snap-align: center;
+  }
+
+  .time-wheel-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+
+  .time-wheel-highlight {
+    pointer-events: none;
+    position: absolute;
+    inset-inline: 0.75rem;
+    top: 50%;
+    height: var(--wheel-item);
+    transform: translateY(-50%);
+    border-top: 1px solid var(--color-rule);
+    border-bottom: 1px solid var(--color-rule);
+  }
+}
+
+@media (min-width: 640px) {
+  .app-frame {
+    height: calc(100dvh - 2rem);
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-page);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">纸历</string>
+    <string name="title_activity_main">纸历</string>
+    <string name="package_name">app.zhili.calendar</string>
+    <string name="custom_url_scheme">app.zhili.calendar</string>
+</resources>
