@@ -9,14 +9,14 @@ import { downloadText } from "@/lib/utils";
 import { ApkDownload } from "./apk-download";
 
 export function BackupSheet() {
-  const { backupOpen, setBackupOpen, events, categories, restoreEvents } = useCalendar();
+  const { backupOpen, setBackupOpen, events, categories, tags, restoreEvents } = useCalendar();
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<ParsedBackup | null>(null);
 
   async function exportJson() {
     const stamp = new Date().toISOString().slice(0, 10);
-    await downloadText(`zhili-${stamp}.json`, serializeBackup(events, categories), "application/json");
+    await downloadText(`zhili-${stamp}.json`, serializeBackup(events, categories, tags), "application/json");
     toast("已导出 JSON 备份");
   }
 
@@ -46,7 +46,7 @@ export function BackupSheet() {
     if (!pending) return;
     setBusy(true);
     try {
-      await restoreEvents(pending.events, pending.categories);
+      await restoreEvents(pending.events, pending.categories, pending.tags);
       toast(`已恢复 ${pending.events.length} 条`);
       setPending(null);
       setBackupOpen(false);

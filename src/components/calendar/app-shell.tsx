@@ -6,6 +6,7 @@ import { DaySheet } from "./day-sheet";
 import { Dock } from "./dock";
 import { MonthGrid } from "./month-grid";
 import { SearchSheet } from "./search-sheet";
+import { TagSheet } from "./tag-sheet";
 
 export function AppShell() {
   return (
@@ -21,6 +22,7 @@ export function AppShell() {
       </div>
       <DaySheet />
       <SearchSheet />
+      <TagSheet />
       <BackupSheet />
       <Toaster
         position="top-center"

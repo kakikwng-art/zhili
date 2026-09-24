@@ -12,14 +12,16 @@ import {
   deleteEvent,
   listCategories,
   listEvents,
+  listTags,
   renameCategoryOnEvents,
   replaceAllEvents,
   saveCategories,
+  saveTags,
   updateEvent,
 } from "./db";
 import { addMonths, parseDateKey, toDateKey } from "./dates";
 import { seedIfEmpty } from "./seed";
-import { DEFAULT_CATEGORIES, type CalEvent } from "./types";
+import { DEFAULT_CATEGORIES, type CalEvent, type CalTag } from "./types";
 
 type EventDraft = {
   title: string;
@@ -50,10 +52,15 @@ type CalendarContextValue = {
   createEvent: (date: string, draft: EventDraft) => Promise<void>;
   saveEvent: (id: string, draft: EventDraft & { date?: string }) => Promise<void>;
   removeEvent: (id: string) => Promise<void>;
-  restoreEvents: (events: CalEvent[], categories?: string[]) => Promise<void>;
+  restoreEvents: (events: CalEvent[], categories?: string[], tags?: CalTag[]) => Promise<void>;
   addCategory: (name: string) => Promise<boolean>;
   renameCategory: (from: string, to: string) => Promise<boolean>;
   removeCategory: (name: string) => Promise<void>;
+  tags: CalTag[];
+  tagsOpen: boolean;
+  setTagsOpen: (open: boolean) => void;
+  saveTag: (input: { id?: string; title: string; color: string }) => Promise<boolean>;
+  removeTag: (id: string) => Promise<void>;
 };
 
 const CalendarContext = createContext<CalendarContextValue | null>(null);
@@ -84,13 +91,16 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [backupOpen, setBackupOpen] = useState(false);
+  const [tagsOpen, setTagsOpen] = useState(false);
   const [events, setEvents] = useState<CalEvent[]>([]);
   const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const [tags, setTags] = useState<CalTag[]>([]);
 
   const reload = useCallback(async () => {
-    const [rows, names] = await Promise.all([listEvents(), listCategories()]);
+    const [rows, names, stamps] = await Promise.all([listEvents(), listCategories(), listTags()]);
     setEvents(rows);
     setCategories(names);
+    setTags(stamps);
   }, []);
 
   useEffect(() => {
@@ -101,10 +111,11 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
     void (async () => {
       try {
         await seedIfEmpty();
-        const [rows, names] = await Promise.all([listEvents(), listCategories()]);
+        const [rows, names, stamps] = await Promise.all([listEvents(), listCategories(), listTags()]);
         if (cancelled) return;
         setEvents(rows);
         setCategories(names);
+        setTags(stamps);
       } catch (error) {
         console.error(error);
       } finally {
@@ -175,11 +186,12 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
   );
 
   const restoreEvents = useCallback(
-    async (next: CalEvent[], nextCategories?: string[]) => {
+    async (next: CalEvent[], nextCategories?: string[], nextTags?: CalTag[]) => {
       await replaceAllEvents(next);
       if (nextCategories && nextCategories.length > 0) {
         await saveCategories(nextCategories);
       }
+      if (nextTags) await saveTags(nextTags);
       await reload();
     },
     [reload],
@@ -222,6 +234,35 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
     [reload],
   );
 
+  const saveTag = useCallback(
+    async (input: { id?: string; title: string; color: string }) => {
+      const title = input.title.trim();
+      const color = input.color.trim();
+      if (!title || !color) return false;
+      const current = await listTags();
+      const duplicate = current.some((tag) => tag.title === title && tag.id !== input.id);
+      if (duplicate) return false;
+      if (!input.id && current.length >= 24) return false;
+      const next = input.id
+        ? current.map((tag) => (tag.id === input.id ? { ...tag, title, color } : tag))
+        : [...current, { id: crypto.randomUUID(), title, color }];
+      if (input.id && !current.some((tag) => tag.id === input.id)) return false;
+      await saveTags(next);
+      await reload();
+      return true;
+    },
+    [reload],
+  );
+
+  const removeTag = useCallback(
+    async (id: string) => {
+      const current = await listTags();
+      await saveTags(current.filter((tag) => tag.id !== id));
+      await reload();
+    },
+    [reload],
+  );
+
   const value = useMemo<CalendarContextValue>(
     () => ({
       ready,
@@ -234,6 +275,8 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
       events,
       eventsByDate,
       categories,
+      tags,
+      tagsOpen,
       jumpToToday,
       openToday,
       revealDate,
@@ -241,6 +284,7 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
       selectDate: setSelectedDate,
       setSearchOpen,
       setBackupOpen,
+      setTagsOpen,
       createEvent,
       saveEvent,
       removeEvent,
@@ -248,6 +292,8 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
       addCategory,
       renameCategory,
       removeCategory,
+      saveTag,
+      removeTag,
     }),
     [
       ready,
@@ -257,9 +303,11 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
       selectedDate,
       searchOpen,
       backupOpen,
+      tagsOpen,
       events,
       eventsByDate,
       categories,
+      tags,
       jumpToToday,
       openToday,
       revealDate,
@@ -271,6 +319,8 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
       addCategory,
       renameCategory,
       removeCategory,
+      saveTag,
+      removeTag,
     ],
   );
 

@@ -1,14 +1,16 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { PaperDrawer } from "@/components/ui/drawer";
 import { useCalendar } from "@/lib/calendar/context";
-import { chipVars, resolveSwatch } from "@/lib/calendar/colors";
+import { chipVars, getSwatch, resolveSwatch } from "@/lib/calendar/colors";
 import { dayHeading } from "@/lib/calendar/dates";
-import type { CalEvent } from "@/lib/calendar/types";
+import type { CalEvent, CalTag } from "@/lib/calendar/types";
 import { cn } from "@/lib/utils";
 import { EventComposer, type Draft } from "./event-composer";
 
 export function DaySheet() {
-  const { selectedDate, selectDate, eventsByDate, createEvent, saveEvent, removeEvent } = useCalendar();
+  const { selectedDate, selectDate, eventsByDate, tags, setTagsOpen, createEvent, saveEvent, removeEvent } =
+    useCalendar();
   const [editing, setEditing] = useState<CalEvent | null>(null);
   const open = selectedDate !== null;
   const events = selectedDate ? (eventsByDate.get(selectedDate) ?? []) : [];
@@ -21,6 +23,18 @@ export function DaySheet() {
   async function handleDelete(id: string) {
     await removeEvent(id);
     if (editing?.id === id) setEditing(null);
+  }
+
+  async function handleStamp(tag: CalTag) {
+    if (!selectedDate) return;
+    const stuck = events.find((event) => event.title === tag.title);
+    if (stuck) {
+      await handleDelete(stuck.id);
+      toast("揭下来了");
+      return;
+    }
+    await createEvent(selectedDate, { title: tag.title, color: tag.color });
+    toast("贴上了");
   }
 
   async function handleSubmit(draft: Draft) {
@@ -54,6 +68,28 @@ export function DaySheet() {
       title={selectedDate ? dayHeading(selectedDate) : ""}
     >
       <div className="min-h-0 flex-1 overflow-y-auto px-4">
+        <div className="flex items-center gap-2 pb-2">
+          <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto">
+            {tags.map((tag) => {
+              const swatch = getSwatch(tag.color);
+              const stuck = events.some((event) => event.title === tag.title);
+              return (
+                <button
+                  key={tag.id}
+                  type="button"
+                  className={cn("shrink-0 rounded-md px-2 py-1 text-xs", stuck && "ring-1 ring-ink/40")}
+                  style={swatch ? { background: swatch.bg, color: swatch.ink } : undefined}
+                  onClick={() => void handleStamp(tag)}
+                >
+                  {tag.title}
+                </button>
+              );
+            })}
+          </div>
+          <button type="button" className="shrink-0 text-xs text-muted" onClick={() => setTagsOpen(true)}>
+            管理
+          </button>
+        </div>
         {events.length === 0 ? (
           <p className="py-6 text-sm leading-normal text-muted">这一天还是空白。写一句就好。</p>
         ) : (

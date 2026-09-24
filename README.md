@@ -6,13 +6,13 @@
 - 数据只存在本机 IndexedDB
 - 支持 JSON 完整备份/恢复，以及 ICS 导出
 
-当前版本：**1.1**（`app.zhili.calendar`）
+当前版本：**1.2**（`app.zhili.calendar`）
 
 | | 链接 |
 | --- | --- |
 | 源码 | [github.com/kakikwng-art/zhili](https://github.com/kakikwng-art/zhili) |
 | 安装包 Releases | [github.com/kakikwng-art/zhili/releases](https://github.com/kakikwng-art/zhili/releases) |
-| v1.1 APK（jsDelivr） | [zhili.apk](https://cdn.jsdelivr.net/gh/kakikwng-art/zhili-apk@v1.1/zhili.apk) |
+| v1.2 APK（jsDelivr） | [zhili.apk](https://cdn.jsdelivr.net/gh/kakikwng-art/zhili-apk@v1.2/zhili.apk) |
 
 ## 产品原则
 

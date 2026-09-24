@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CalendarBackup, CalEvent } from "./types";
+import type { CalendarBackup, CalEvent, CalTag } from "./types";
 
 const EventSchema = z.object({
   id: z.string().min(1),
@@ -13,26 +13,35 @@ const EventSchema = z.object({
   updatedAt: z.number().optional(),
 });
 
+const TagSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  color: z.string().min(1),
+});
+
 const BackupSchema = z.object({
   app: z.literal("zhili").optional(),
   version: z.number().optional(),
   exportedAt: z.string().optional(),
   events: z.array(EventSchema),
   categories: z.array(z.string()).optional(),
+  tags: z.array(TagSchema).optional(),
 });
 
 export type ParsedBackup = {
   events: CalEvent[];
   categories?: string[];
+  tags?: CalTag[];
 };
 
-export function serializeBackup(events: CalEvent[], categories: string[]): string {
+export function serializeBackup(events: CalEvent[], categories: string[], tags: CalTag[] = []): string {
   const payload: CalendarBackup = {
     app: "zhili",
     version: 1,
     exportedAt: new Date().toISOString(),
     events,
     categories,
+    tags,
   };
   return `${JSON.stringify(payload, null, 2)}\n`;
 }
@@ -54,5 +63,8 @@ export function parseBackup(raw: string): ParsedBackup {
       updatedAt: event.updatedAt ?? now,
     })),
     categories: data.categories?.map((name) => name.trim()).filter(Boolean),
+    tags: data.tags
+      ?.map((tag) => ({ id: tag.id, title: tag.title.trim(), color: tag.color.trim() }))
+      .filter((tag) => tag.title && tag.color),
   };
 }

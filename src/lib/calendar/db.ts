@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from "dexie";
-import { DEFAULT_CATEGORIES, type CalEvent } from "./types";
+import { DEFAULT_CATEGORIES, DEFAULT_TAGS, type CalEvent, type CalTag } from "./types";
 
 type MetaRow = { key: string; value: string };
 
@@ -68,6 +68,44 @@ export async function listCategories(): Promise<string[]> {
 export async function saveCategories(names: string[]): Promise<void> {
   const next = names.map((name) => name.trim()).filter(Boolean);
   await setMeta("categories", JSON.stringify(next.length > 0 ? next : DEFAULT_CATEGORIES));
+}
+
+function cleanTags(value: unknown): CalTag[] | null {
+  if (!Array.isArray(value)) return null;
+  const tags: CalTag[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== "object") continue;
+    const row = item as Partial<CalTag>;
+    const title = row.title?.trim();
+    const color = row.color?.trim();
+    const id = row.id?.trim();
+    if (!title || !color || !id) continue;
+    tags.push({ id, title, color });
+  }
+  return tags;
+}
+
+export async function listTags(): Promise<CalTag[]> {
+  const raw = await getMeta("tags");
+  if (!raw) {
+    await setMeta("tags", JSON.stringify(DEFAULT_TAGS));
+    return DEFAULT_TAGS.map((tag) => ({ ...tag }));
+  }
+  try {
+    const parsed = cleanTags(JSON.parse(raw));
+    if (parsed) return parsed;
+  } catch {
+    // ignore malformed meta and reset
+  }
+  await setMeta("tags", JSON.stringify(DEFAULT_TAGS));
+  return DEFAULT_TAGS.map((tag) => ({ ...tag }));
+}
+
+export async function saveTags(tags: CalTag[]): Promise<void> {
+  const next = tags
+    .map((tag) => ({ id: tag.id.trim(), title: tag.title.trim(), color: tag.color.trim() }))
+    .filter((tag) => tag.id && tag.title && tag.color);
+  await setMeta("tags", JSON.stringify(next));
 }
 
 export async function renameCategoryOnEvents(from: string, to: string): Promise<void> {

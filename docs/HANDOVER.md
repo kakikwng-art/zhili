@@ -8,7 +8,7 @@
 
 应用 ID：`app.zhili.calendar`  
 包名 / 显示名：纸历  
-当前版本：1.1（versionCode 2）
+当前版本：1.2（versionCode 3）
 
 仓库：
 
@@ -48,7 +48,7 @@ docs/
 | 写一句就保存 | `event-composer.tsx` | 时间/分类/底色/备注折叠 |
 | 拨盘时间 | `time-wheel.tsx` | iOS 滚轮，不是 `<input type=time>` |
 | 分类增删改 | `category-picker.tsx` | 存在 meta.categories |
-| 底色 | `color-picker.tsx` `src/lib/calendar/colors.ts` | 可覆盖分类默认色 |
+| 标签（文字 + 底色，一点就贴） | `tag-sheet.tsx` 底栏「标签」；当天横条在 `day-sheet.tsx` | 存在 meta.tags。再点同一标签揭下 |
 | 搜索 | `search-sheet.tsx` | 标题/备注/分类/日期 |
 | JSON 备份恢复 | `backup-sheet.tsx` `src/lib/calendar/backup.ts` | schema version 1 |
 | ICS 导出 | `src/lib/calendar/ics.ts` | 方便迁到别的日历 |

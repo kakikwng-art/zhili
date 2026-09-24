@@ -16,7 +16,21 @@ export interface CalendarBackup {
   exportedAt: string;
   events: CalEvent[];
   categories?: string[];
+  tags?: CalTag[];
 }
+
+export interface CalTag {
+  id: string;
+  title: string;
+  color: string;
+}
+
+export const DEFAULT_TAGS: CalTag[] = [
+  { id: "tag-grocery", title: "买菜", color: "banana" },
+  { id: "tag-walk", title: "散步", color: "sage" },
+  { id: "tag-work", title: "工作", color: "cobalt" },
+  { id: "tag-family", title: "家人", color: "flamingo" },
+];
 
 export const DEFAULT_CATEGORIES = ["生活", "工作", "健康", "家人", "随记"];
 
